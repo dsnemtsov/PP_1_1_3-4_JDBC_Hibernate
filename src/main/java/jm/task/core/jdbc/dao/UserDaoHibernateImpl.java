@@ -73,10 +73,6 @@ public class UserDaoHibernateImpl implements UserDao {
     public List<User> getAllUsers() {
         Session session = Util.getSessionFactory().openSession();
         session.beginTransaction();
-//        CriteriaBuilder cb = session.getCriteriaBuilder();
-//        CriteriaQuery<User> cq = cb.createQuery(User.class);
-//        Root<User> rootEntry = cq.from(User.class);
-//        CriteriaQuery<User> all = cq.select(rootEntry);
 
         List<User> result = session.createQuery(JPQL_GET_ALL_USERS, User.class).getResultList();
 
