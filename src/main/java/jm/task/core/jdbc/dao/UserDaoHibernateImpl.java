@@ -4,6 +4,7 @@ import jm.task.core.jdbc.model.User;
 
 import java.util.List;
 import jm.task.core.jdbc.util.Util;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 
 public class UserDaoHibernateImpl implements UserDao {
@@ -31,42 +32,50 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void createUsersTable() {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        session.createSQLQuery(SQL_TO_CREATE_USER_TABLE).executeUpdate();
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.createSQLQuery(SQL_TO_CREATE_USER_TABLE).executeUpdate();
+            session.getTransaction().commit();
+        } catch (HibernateException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override
     public void dropUsersTable() {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        session.createSQLQuery(SQL_TO_DROP_TABLE).executeUpdate();
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession();) {
+            session.beginTransaction();
+            session.createSQLQuery(SQL_TO_DROP_TABLE).executeUpdate();
+            session.getTransaction().commit();
+        } catch (HibernateException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override
     public void saveUser(String name, String lastName, byte age) {
         User user = new User(name, lastName, age);
 
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        session.save(user);
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            session.save(user);
+            session.getTransaction().commit();
+        } catch (HibernateException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override
     public void removeUserById(long id) {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        User user = new User();
-        user.setId(id);
-        session.delete(user);
-        session.getTransaction().commit();
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            session.beginTransaction();
+            User user = new User();
+            user.setId(id);
+            session.delete(user);
+            session.getTransaction().commit();
+        } catch (HibernateException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     @Override
