@@ -43,6 +43,7 @@ public class Util {
                 settings.put(AvailableSettings.USER, USERNAME);
                 settings.put(AvailableSettings.PASS, PASSWORD);
                 settings.put(AvailableSettings.DIALECT, DIALECT);
+                settings.put(AvailableSettings.SHOW_SQL, true);
 
                 configuration.setProperties(settings);
 

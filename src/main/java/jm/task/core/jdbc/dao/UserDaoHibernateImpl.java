@@ -1,11 +1,13 @@
 package jm.task.core.jdbc.dao;
 
+import java.util.ArrayList;
 import jm.task.core.jdbc.model.User;
 
 import java.util.List;
 import jm.task.core.jdbc.util.Util;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 public class UserDaoHibernateImpl implements UserDao {
     private static UserDaoHibernateImpl instance;
@@ -33,22 +35,38 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void createUsersTable() {
         try (Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.createSQLQuery(SQL_TO_CREATE_USER_TABLE).executeUpdate();
-            session.getTransaction().commit();
-        } catch (HibernateException ex) {
-            throw new IllegalStateException(ex);
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                session.createSQLQuery(SQL_TO_CREATE_USER_TABLE).executeUpdate();
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
         }
     }
 
     @Override
     public void dropUsersTable() {
-        try (Session session = Util.getSessionFactory().openSession();) {
-            session.beginTransaction();
-            session.createSQLQuery(SQL_TO_DROP_TABLE).executeUpdate();
-            session.getTransaction().commit();
-        } catch (HibernateException ex) {
-            throw new IllegalStateException(ex);
+        try (Session session = Util.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                session.createSQLQuery(SQL_TO_DROP_TABLE).executeUpdate();
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
         }
     }
 
@@ -57,45 +75,83 @@ public class UserDaoHibernateImpl implements UserDao {
         User user = new User(name, lastName, age);
 
         try (Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            session.save(user);
-            session.getTransaction().commit();
-        } catch (HibernateException ex) {
-            throw new IllegalStateException(ex);
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                session.save(user);
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
         }
     }
 
     @Override
     public void removeUserById(long id) {
+        User user = new User();
+        user.setId(id);
+
         try (Session session = Util.getSessionFactory().openSession()) {
-            session.beginTransaction();
-            User user = new User();
-            user.setId(id);
-            session.delete(user);
-            session.getTransaction().commit();
-        } catch (HibernateException ex) {
-            throw new IllegalStateException(ex);
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                session.delete(user);
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
         }
     }
 
     @Override
     public List<User> getAllUsers() {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
+        List<User> result;
 
-        List<User> result = session.createQuery(JPQL_GET_ALL_USERS, User.class).getResultList();
-
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                result = session.createQuery(JPQL_GET_ALL_USERS, User.class).getResultList();
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
+        }
 
         return result;
     }
 
     @Override
     public void cleanUsersTable() {
-        Session session = Util.getSessionFactory().openSession();
-        session.beginTransaction();
-        session.createQuery(JPQL_DELETE_ALL_FROM_USER_TABLE).executeUpdate();
-
-        session.close();
+        try (Session session = Util.getSessionFactory().openSession()) {
+            Transaction transaction = null;
+            try {
+                transaction = session.beginTransaction();
+                session.createQuery(JPQL_DELETE_ALL_FROM_USER_TABLE).executeUpdate();
+                if (transaction != null) {
+                    transaction.commit();
+                }
+            } catch (HibernateException ex) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+                throw new IllegalStateException(ex);
+            }
+        }
     }
 }
